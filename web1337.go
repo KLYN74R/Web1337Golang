@@ -8,8 +8,7 @@ For Golang devs
 
 package web1337
 
-import "fmt"
+func Hello() string {
 
-func Hello() {
-	fmt.Println("Hello from Web1337")
+	return "Hello from Web1337"
 }
