@@ -12,11 +12,21 @@ import (
 	"testing"
 )
 
-func TestHello(t *testing.T) {
+func TestEd25519(t *testing.T) {
 
-	if Hello() != "Hello from Web1337" {
+	if !(Ed25519Process()) {
 
-		t.Errorf("Hello() func didn't return greeting")
+		t.Error("Signature verification failed")
+
+	}
+
+}
+
+func TestPQC(t *testing.T) {
+
+	if !(DilithiumProcess() && BlissProcess()) {
+
+		t.Error("Signature verification failed")
 
 	}
 
