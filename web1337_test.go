@@ -31,3 +31,13 @@ func TestPQC(t *testing.T) {
 	}
 
 }
+
+func TestTed25519(t *testing.T) {
+
+	if !(Ted25519Process()) {
+
+		t.Error("Test failed")
+
+	}
+
+}

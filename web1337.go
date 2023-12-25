@@ -74,5 +74,23 @@ func DilithiumProcess() bool {
 
 }
 
+func Ted25519Process() bool {
+
+	pubKey, shares, commitments := crypto_primitives.GenerateTed25519(4, 6)
+
+	fmt.Println("PubKey is ", pubKey)
+
+	fmt.Println("Shares ", shares)
+
+	fmt.Println("Commitments ", commitments)
+
+	ok := crypto_primitives.VerifySecretShareTed25519(4, 6, shares[0], commitments)
+
+	fmt.Println("Share is ", ok)
+
+	return ok
+
+}
+
 type Web1337 struct {
 }
