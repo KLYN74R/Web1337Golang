@@ -1,15 +1,13 @@
 package crypto_primitives
 
 import (
-	"strings"
-
 	"github.com/coinbase/kryptology/pkg/ted25519/ted25519"
 
 	"encoding/hex"
 )
 
 // Function to generate pubkey, shares for signers and commitments
-func GenerateTed25519(T, N int) (myPubKey string, sharesToExport, commitmentsToExport []string) {
+func GenerateTed25519(T, N int) (rootPubKey string, sharesToExport, commitmentsToExport []string) {
 
 	//Create T/N threshold configs
 	config := ted25519.ShareConfiguration{T, N}
@@ -17,7 +15,7 @@ func GenerateTed25519(T, N int) (myPubKey string, sharesToExport, commitmentsToE
 	// GenerateSharedKey generates a random key, splits it, and returns the public key, shares, and VSS commitments.
 	// func GenerateSharedKey(config *ShareConfiguration) (PublicKey, []*KeyShare, Commitments, error)
 
-	myPub, secretShares, commitments, _ := ted25519.GenerateSharedKey(&config)
+	rootPub, secretShares, commitments, _ := ted25519.GenerateSharedKey(&config)
 
 	//Serialize secret shares and commitments for VSS
 
@@ -34,7 +32,7 @@ func GenerateTed25519(T, N int) (myPubKey string, sharesToExport, commitmentsToE
 
 	}
 
-	return hex.EncodeToString(myPub.Bytes()), sharesToExport, commitmentsToExport
+	return hex.EncodeToString(rootPub.Bytes()), sharesToExport, commitmentsToExport
 
 }
 
@@ -71,13 +69,13 @@ func VerifySecretShareTed25519(T, N int, receivedSecretShareAsHex string, receiv
 
 }
 
-func GenerateNonceSharesTed25519(T, N int, secretShareAsHex, myPubKeyAsHex, message string) (noncePubKeyAsHex string, nonceSharesAsHex, nonceCommitmentsAsHex []string) {
+func GenerateNonceSharesTed25519(T, N int, secretShareAsHex, rootPubKeyAsHex, message string) (noncePubKeyAsHex string, nonceSharesAsHex, nonceCommitmentsAsHex []string) {
 
 	config := ted25519.ShareConfiguration{T, N}
 
 	secretShareAsBuffer, _ := hex.DecodeString(secretShareAsHex)
 
-	rootPubKeyAsBuffer, _ := hex.DecodeString(myPubKeyAsHex)
+	rootPubKeyAsBuffer, _ := hex.DecodeString(rootPubKeyAsHex)
 
 	rootPubKey, _ := ted25519.PublicKeyFromBytes(rootPubKeyAsBuffer)
 
@@ -103,7 +101,7 @@ func GenerateNonceSharesTed25519(T, N int, secretShareAsHex, myPubKeyAsHex, mess
 
 }
 
-func SubsignTed25519(secretShareAsHex, rootPubKeyAsHex, message string, nonceSharesAsHex, noncePubKeysAsHex []string) string {
+func SubsignTed25519(secretShareAsHex, rootPubKeyAsHex, message string, nonceSharesAsHex, noncePubKeysAsHex []string) map[byte]string {
 
 	//Deserialize secret share byte buffer received by you initially(1st communications round)
 	receivedSecretShareBuffer, _ := hex.DecodeString(secretShareAsHex)
@@ -158,28 +156,32 @@ func SubsignTed25519(secretShareAsHex, rootPubKeyAsHex, message string, nonceSha
 
 	}
 
-	return hex.EncodeToString(ted25519.TSign(messageAsBytes, ted25519.KeyShareFromBytes(receivedSecretShareBuffer), rootPubKey, myNonceShare, myNoncePub).Bytes())
+	subsigna := ted25519.TSign(messageAsBytes, ted25519.KeyShareFromBytes(receivedSecretShareBuffer), rootPubKey, myNonceShare, myNoncePub)
+
+	byteIdentifier := subsigna.ShareIdentifier
+
+	return map[byte]string{byteIdentifier: hex.EncodeToString(subsigna.Bytes())}
 
 }
 
-func AggregateSubSignaturesTed25519(T, N int, hexSubSignatures []string) string {
+func AggregateSubSignaturesTed25519(T, N int, hexSubSignatures []map[byte]string) string {
 
 	//https://github.com/coinbase/kryptology/blob/269410e1b06b43da82caf28cf99cb8c0c140b65d/pkg/ted25519/ted25519/partialsig.go#L19
 
 	//Create T/N threshold configs
 	config := ted25519.ShareConfiguration{T, N}
 
-	subSignaturesArray := make([]*ted25519.PartialSignature, T)
+	var subSignaturesArray []*ted25519.PartialSignature
 
-	for i, singleSubSig := range hexSubSignatures {
+	for _, subSignaWithByteIdentifier := range hexSubSignatures {
 
-		metaToRecover := strings.Split(singleSubSig, "*")
+		for identifier, hexSubsigna := range subSignaWithByteIdentifier {
 
-		index, _ := hex.DecodeString(metaToRecover[0])
+			subBuffer, _ := hex.DecodeString(hexSubsigna)
 
-		subBuffer, _ := hex.DecodeString(metaToRecover[1])
+			subSignaturesArray = append(subSignaturesArray, ted25519.NewPartialSignature(identifier, subBuffer))
 
-		subSignaturesArray[i] = ted25519.NewPartialSignature(index[0], subBuffer)
+		}
 
 	}
 
@@ -187,7 +189,13 @@ func AggregateSubSignaturesTed25519(T, N int, hexSubSignatures []string) string 
 	//noncePub := ted25519.GeAdd(ted25519.GeAdd(noncePub1, noncePub2), noncePub3)
 
 	//Build full signature from subsignatures
-	sig, _ := ted25519.Aggregate(subSignaturesArray, &config)
+	sig, err := ted25519.Aggregate(subSignaturesArray, &config)
+
+	if err != nil {
+
+		return "Err"
+
+	}
 
 	return hex.EncodeToString(sig)
 
@@ -204,7 +212,13 @@ func VerifyTed25519(rootPubAsHex, messageAsHex, aggregatedRootSignatureAsHex str
 	aggregatedSignature, _ := hex.DecodeString(aggregatedRootSignatureAsHex)
 
 	//Check
-	ok, _ := ted25519.Verify(rootPubKey, msg, aggregatedSignature)
+	ok, err := ted25519.Verify(rootPubKey, msg, aggregatedSignature)
+
+	if err != nil {
+
+		return false
+
+	}
 
 	return ok
 
