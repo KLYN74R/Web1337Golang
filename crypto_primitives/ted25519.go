@@ -128,7 +128,7 @@ func SubsignTed25519(secretShareAsHex, rootPubKeyAsHex, message string, nonceSha
 
 		} else {
 
-			myNonceShare.Add(ted25519.NonceShareFromBytes(subBuffer))
+			myNonceShare = myNonceShare.Add(ted25519.NonceShareFromBytes(subBuffer))
 
 		}
 

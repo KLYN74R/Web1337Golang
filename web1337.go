@@ -145,11 +145,14 @@ func Ted25519Process() bool {
 
 	// Finally - verify aggragated signatures
 
-	// is12OK := crypto_primitives.VerifyTed25519(rootPubKey, msg, aggregatedSignature12)
+	is12OK := crypto_primitives.VerifyTed25519(rootPubKey, msg, aggregatedSignature12)
 
 	is23OK := crypto_primitives.VerifyTed25519(rootPubKey, msg, aggregatedSignature23)
 
-	return is23OK
+	fmt.Println("Aggregated signa 1 & 2 => ", is12OK)
+	fmt.Println("Aggregated signa 2 & 3 => ", is23OK)
+
+	return is12OK && is23OK
 
 }
 
