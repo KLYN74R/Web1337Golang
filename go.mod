@@ -7,6 +7,7 @@ require (
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/cloudflare/circl v1.3.6
 	github.com/coinbase/kryptology v1.8.0
+	github.com/herumi/bls-eth-go-binary v1.32.1
 	go.dedis.ch/kyber/v4 v4.0.0-pre2
 )
 
