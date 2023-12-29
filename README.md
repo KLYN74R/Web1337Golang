@@ -4,7 +4,7 @@
 
 This is the version for Golang devs
 
-<img src="./Web1337.png">
+<img src="./Web1337Golang.png">
 
 </div>
 
