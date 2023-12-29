@@ -13,6 +13,7 @@ func TestEthBls(t *testing.T) {
 
 	// Generate keys
 	secretKey := bls.SecretKey{}
+
 	secretKey.SetByCSPRNG()
 	publicKey := secretKey.GetPublicKey()
 
@@ -59,6 +60,8 @@ func TestEthBls(t *testing.T) {
 
 	blaSecretKey.DeserializeHexStr(secretKey.SerializeToHexStr())
 
+	fmt.Println("Pub with 0x => ", ("0x" + publicKey.SerializeToHexStr())[2:])
+
 	fmt.Println("Now blaSecKey is ", blaSecretKey.SerializeToHexStr())
 
 	// Check signature
@@ -83,6 +86,8 @@ func TestEthBls(t *testing.T) {
 	secretKey2.SetByCSPRNG()
 
 	publicKey2 := secretKey2.GetPublicKey()
+
+	fmt.Println("PrivateKey2 is => ", secretKey2.SerializeToHexStr())
 
 	// Create signature
 	signature2 := secretKey2.Sign(message)

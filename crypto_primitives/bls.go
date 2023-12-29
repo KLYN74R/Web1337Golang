@@ -1,192 +1,119 @@
 package crypto_primitives
 
-import (
-	"encoding/base64"
-	"encoding/hex"
+import bls "github.com/herumi/bls-eth-go-binary/bls"
 
-	"github.com/btcsuite/btcutil/base58"
-	"go.dedis.ch/kyber/v4/pairing/bn256"
-	bls "go.dedis.ch/kyber/v4/sign/bls"
-	"go.dedis.ch/kyber/v4/util/random"
-)
+func GenerateBlsKeypair() (string, string) {
 
-func GenerateBlsKeypair() (privateKeyAsHex, publicKeyAsBase58 string) {
+	// Init lib
+	bls.Init(bls.BLS12_381)
 
-	suite := bn256.NewSuiteG2()
+	// Generate keys
+	secretKey := bls.SecretKey{}
 
-	privateKey, publicKey := bls.NewKeyPair(suite, random.New())
+	secretKey.SetByCSPRNG()
 
-	pubKeyToExport, _ := publicKey.MarshalBinary()
+	publicKey := secretKey.GetPublicKey()
 
-	return privateKey.String(), base58.Encode(pubKeyToExport)
+	return secretKey.SerializeToHexStr(), "0x" + publicKey.SerializeToHexStr()
 
 }
 
-func AggregateBlsPubKeys(arrayOfPubKeysAsBase58 []string) (aggregatedPubKeyAsBase58 string) {
+func AggregateBlsPubKeys(arrayOfPubKeysAsHexWith0x []string) string {
 
-	suite := bn256.NewSuite()
+	// Init lib
 
-	finalPubKey := suite.G2().Point()
+	bls.Init(bls.BLS12_381)
 
-	for _, pubKeyAsBase58 := range arrayOfPubKeysAsBase58 {
+	aggregatedPubKey := bls.PublicKey{}
 
-		pubKeyAsBytes := base58.Decode(pubKeyAsBase58)
+	for _, pubKeyAsHexWith0x := range arrayOfPubKeysAsHexWith0x {
 
-		recoveredPubKey := suite.G2().Point()
+		componentKey := bls.PublicKey{}
 
-		err := recoveredPubKey.UnmarshalBinary(pubKeyAsBytes)
+		componentKey.DeserializeHexStr(pubKeyAsHexWith0x[2:])
 
-		if err != nil {
-
-			panic("Can't recover pubkey")
-
-		} else {
-
-			finalPubKey.Add(finalPubKey, recoveredPubKey)
-
-		}
+		aggregatedPubKey.Add(&componentKey)
 
 	}
 
-	// Now encode final pubkey to Base58 and return
-
-	finalPubKeyToExport, _ := finalPubKey.MarshalBinary()
-
-	return base58.Encode(finalPubKeyToExport)
+	return "0x" + aggregatedPubKey.SerializeToHexStr()
 
 }
 
-func AggregateBlsSignatures(arrayOfSignaturesAsBase64 []string) string {
+func AggregateBlsSignatures(arrayOfSignaturesAsHex []string) string {
 
-	suite := bn256.NewSuite()
+	bls.Init(bls.BLS12_381)
 
-	// Run a cycle to convert signatures from Base64 to []byte
+	aggregatedSignature := bls.Sign{}
 
-	// signaturesSet := make([]([]byte), len(arrayOfSignaturesAsBase64))
+	for _, signatureAshex := range arrayOfSignaturesAsHex {
 
-	var signaturesSet [][]byte
+		componentSigna := bls.Sign{}
 
-	for _, signatureAsBase64 := range arrayOfSignaturesAsBase64 {
+		componentSigna.DeserializeHexStr(signatureAshex)
 
-		signatureAsBytes, err := base64.StdEncoding.DecodeString(signatureAsBase64)
-
-		if err != nil {
-
-			panic(err)
-
-		}
-
-		signaturesSet = append(signaturesSet, signatureAsBytes)
+		aggregatedSignature.Add(&componentSigna)
 
 	}
 
-	// Now pass signatures to BLS package and then return the Base64 encoded aggregated signature
-
-	aggregatedSignature, _ := bls.AggregateSignatures(suite, signaturesSet...)
-
-	return base64.StdEncoding.EncodeToString(aggregatedSignature)
+	return aggregatedSignature.SerializeToHexStr()
 
 }
 
-func GenerateBlsSignature(privateKeyAsHex, message string) (blsSignature string) {
+func GenerateBlsSignature(privateKeyAsHex, message string) string {
 
-	msg := []byte(message)
+	bls.Init(bls.BLS12_381)
 
-	suite := bn256.NewSuite()
+	// Recover private key from hex
 
-	// Recover private key
+	privateKey := bls.SecretKey{}
 
-	privateKeyAsBytes, _ := hex.DecodeString(privateKeyAsHex)
+	privateKey.DeserializeHexStr(privateKeyAsHex)
 
-	recoveredPrivateKey := suite.G2().Scalar()
-
-	err := recoveredPrivateKey.UnmarshalBinary(privateKeyAsBytes)
-
-	if err != nil {
-
-		panic("Impossible to recover private key")
-
-	}
-
-	blsSignaAsBytes, _ := bls.Sign(suite, recoveredPrivateKey, msg)
-
-	// To base64
-
-	return base64.StdEncoding.EncodeToString(blsSignaAsBytes)
+	return privateKey.Sign(message).SerializeToHexStr()
 
 }
 
-func VerifyBlsSignature(pubKeyAsBase58, message, signatureAsBase64 string) bool {
+func VerifyBlsSignature(pubKeyAsHexWith0x, message, signatureAsHex string) bool {
 
-	msg := []byte(message)
+	bls.Init(bls.BLS12_381)
 
-	suite := bn256.NewSuite()
+	// Recover public key and signature from hex
 
-	// Recover public key
+	publicKey := bls.PublicKey{}
 
-	pubKeyAsBytes := base58.Decode(pubKeyAsBase58)
+	publicKey.DeserializeHexStr(pubKeyAsHexWith0x[2:])
 
-	recoveredPubKey := suite.G2().Point()
+	signature := bls.Sign{}
 
-	err := recoveredPubKey.UnmarshalBinary(pubKeyAsBytes)
+	signature.DeserializeHexStr(signatureAsHex)
 
-	if err != nil {
-
-		panic("Impossible to recover public key")
-
-	}
-
-	// Decode signature from Base64
-
-	signatureAsBytes, _ := base64.StdEncoding.DecodeString(signatureAsBase64)
-
-	err = bls.Verify(suite, recoveredPubKey, msg, signatureAsBytes)
-
-	return err == nil
+	return signature.Verify(&publicKey, message)
 
 }
 
-func VerifyBlsThresholdSignature(aggregatedPubkeyWhoSignAsBase58, aggregatedSignatureAsBase64, rootPubAsBase58, message string, afkPubkeysArray []string, reverseThreshold uint) bool {
+func VerifyBlsThresholdSignature(aggregatedPubkeyWhoSignAsHexWith0x, aggregatedSignatureAsHex, rootPubAsHexWith0x, message string, afkPubkeys []string, reverseThreshold uint) bool {
 
-	if len(afkPubkeysArray) <= int(reverseThreshold) {
+	if len(afkPubkeys) <= int(reverseThreshold) {
 
 		verifiedSignature := VerifyBlsSignature(
 
-			aggregatedPubkeyWhoSignAsBase58,
+			aggregatedPubkeyWhoSignAsHexWith0x,
 			message,
-			aggregatedSignatureAsBase64,
+			aggregatedSignatureAsHex,
 		)
 
 		if verifiedSignature {
 
+			bls.Init(bls.BLS12_381)
+
 			// If all the previos steps are OK - do the most CPU intensive task - pubkeys aggregation
 
-			suite := bn256.NewSuite()
+			// Aggregate AFK signers
 
-			// Recover public key of parts who signed this message and root pubkey
+			aggregatedPubKeyOfAfkSignersWith0x := AggregateBlsPubKeys(afkPubkeys)
 
-			aggregatedPubKeyAsBytes := base58.Decode(aggregatedPubkeyWhoSignAsBase58)
-			rootPubKeyAsBytes := base58.Decode(aggregatedPubkeyWhoSignAsBase58)
-
-			// Create empty templates
-
-			recoveredPubKeyOfSigners := suite.G2().Point()
-			recoveredRootPubKey := suite.G2().Point()
-
-			err1 := recoveredPubKeyOfSigners.UnmarshalBinary(aggregatedPubKeyAsBytes)
-			err2 := recoveredRootPubKey.UnmarshalBinary(rootPubKeyAsBytes)
-
-			if err1 != nil || err2 != nil {
-
-				return false
-
-			}
-
-			//Now aggregate AFK signers
-
-			aggregatedPubKeyOfAfkSigners := AggregateBlsPubKeys(afkPubkeysArray)
-
-			return AggregateBlsPubKeys([]string{aggregatedPubKeyOfAfkSigners, aggregatedPubkeyWhoSignAsBase58}) == rootPubAsBase58
+			return AggregateBlsPubKeys([]string{aggregatedPubKeyOfAfkSignersWith0x, aggregatedPubkeyWhoSignAsHexWith0x}) == rootPubAsHexWith0x
 
 		} else {
 

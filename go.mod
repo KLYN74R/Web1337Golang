@@ -8,7 +8,6 @@ require (
 	github.com/cloudflare/circl v1.3.6
 	github.com/coinbase/kryptology v1.8.0
 	github.com/herumi/bls-eth-go-binary v1.32.1
-	go.dedis.ch/kyber/v4 v4.0.0-pre2
 )
 
 require (
@@ -17,7 +16,6 @@ require (
 	github.com/bwesterb/go-ristretto v1.2.3 // indirect
 	github.com/consensys/gnark-crypto v0.5.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	go.dedis.ch/fixbuf v1.0.3 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 )
