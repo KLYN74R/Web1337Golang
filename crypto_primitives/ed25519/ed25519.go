@@ -1,4 +1,4 @@
-package crypto_primitives
+package ed25519
 
 import (
 	"crypto/ed25519"
@@ -9,7 +9,7 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 )
 
-func GenerateEd25519KeyPair() (string, string) {
+func GenerateKeyPair() (string, string) {
 
 	publicKey, privateKey, _ := ed25519.GenerateKey(rand.Reader)
 
@@ -19,7 +19,7 @@ func GenerateEd25519KeyPair() (string, string) {
 
 // Returns signature in base64(to use it in transaction later)
 
-func GenerateEd25519Signature(privateKey, msg string) string {
+func GenerateSignature(privateKey, msg string) string {
 
 	privateKeyAsBytes, _ := hex.DecodeString(privateKey)
 
@@ -36,7 +36,7 @@ func GenerateEd25519Signature(privateKey, msg string) string {
 1 - pubKey
 2 - signature
 */
-func VerifyEd25519Signature(stringMessage, base58PubKey, base64Signature string) bool {
+func VerifySignature(stringMessage, base58PubKey, base64Signature string) bool {
 
 	// Decode evrything
 

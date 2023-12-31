@@ -1,8 +1,8 @@
-package crypto_primitives
+package bls
 
 import bls "github.com/herumi/bls-eth-go-binary/bls"
 
-func GenerateBlsKeypair() (string, string) {
+func GenerateKeypair() (string, string) {
 
 	// Init lib
 	bls.Init(bls.BLS12_381)
@@ -18,7 +18,7 @@ func GenerateBlsKeypair() (string, string) {
 
 }
 
-func AggregateBlsPubKeys(arrayOfPubKeysAsHexWith0x []string) string {
+func AggregatePubKeys(arrayOfPubKeysAsHexWith0x []string) string {
 
 	// Init lib
 
@@ -40,7 +40,7 @@ func AggregateBlsPubKeys(arrayOfPubKeysAsHexWith0x []string) string {
 
 }
 
-func AggregateBlsSignatures(arrayOfSignaturesAsHex []string) string {
+func AggregateSignatures(arrayOfSignaturesAsHex []string) string {
 
 	bls.Init(bls.BLS12_381)
 
@@ -60,7 +60,7 @@ func AggregateBlsSignatures(arrayOfSignaturesAsHex []string) string {
 
 }
 
-func GenerateBlsSignature(privateKeyAsHex, message string) string {
+func GenerateSignature(privateKeyAsHex, message string) string {
 
 	bls.Init(bls.BLS12_381)
 
@@ -74,7 +74,7 @@ func GenerateBlsSignature(privateKeyAsHex, message string) string {
 
 }
 
-func VerifyBlsSignature(pubKeyAsHexWith0x, message, signatureAsHex string) bool {
+func VerifySignature(pubKeyAsHexWith0x, message, signatureAsHex string) bool {
 
 	bls.Init(bls.BLS12_381)
 
@@ -92,11 +92,11 @@ func VerifyBlsSignature(pubKeyAsHexWith0x, message, signatureAsHex string) bool 
 
 }
 
-func VerifyBlsThresholdSignature(aggregatedPubkeyWhoSignAsHexWith0x, aggregatedSignatureAsHex, rootPubAsHexWith0x, message string, afkPubkeys []string, reverseThreshold uint) bool {
+func VerifyThresholdSignature(aggregatedPubkeyWhoSignAsHexWith0x, aggregatedSignatureAsHex, rootPubAsHexWith0x, message string, afkPubkeys []string, reverseThreshold uint) bool {
 
 	if len(afkPubkeys) <= int(reverseThreshold) {
 
-		verifiedSignature := VerifyBlsSignature(
+		verifiedSignature := VerifySignature(
 
 			aggregatedPubkeyWhoSignAsHexWith0x,
 			message,
@@ -111,9 +111,9 @@ func VerifyBlsThresholdSignature(aggregatedPubkeyWhoSignAsHexWith0x, aggregatedS
 
 			// Aggregate AFK signers
 
-			aggregatedPubKeyOfAfkSignersWith0x := AggregateBlsPubKeys(afkPubkeys)
+			aggregatedPubKeyOfAfkSignersWith0x := AggregatePubKeys(afkPubkeys)
 
-			return AggregateBlsPubKeys([]string{aggregatedPubKeyOfAfkSignersWith0x, aggregatedPubkeyWhoSignAsHexWith0x}) == rootPubAsHexWith0x
+			return AggregatePubKeys([]string{aggregatedPubKeyOfAfkSignersWith0x, aggregatedPubkeyWhoSignAsHexWith0x}) == rootPubAsHexWith0x
 
 		} else {
 

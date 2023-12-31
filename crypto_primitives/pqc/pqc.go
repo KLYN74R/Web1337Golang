@@ -9,7 +9,7 @@ https://github.com/LoCCS/bliss
 
 */
 
-package crypto_primitives
+package pqc
 
 import (
 	"math/rand"

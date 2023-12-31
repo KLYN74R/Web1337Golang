@@ -14,7 +14,7 @@ import (
 
 	web1337 "github.com/KLYN74R/Web1337Golang"
 
-	"github.com/KLYN74R/Web1337Golang/crypto_primitives"
+	tbls "github.com/KLYN74R/Web1337Golang/crypto_primitives/tbls"
 )
 
 func TestEd25519(t *testing.T) {
@@ -49,7 +49,7 @@ func TestBls(t *testing.T) {
 
 func TestTBLS(t *testing.T) {
 
-	myIDs := crypto_primitives.GenerateTblsRandomIDs(6)
+	myIDs := tbls.GenerateRandomIds(6)
 
 	fmt.Println("IDs => ", myIDs)
 

@@ -11,22 +11,24 @@ package web1337
 import (
 	"fmt"
 
-	"github.com/KLYN74R/Web1337Golang/crypto_primitives"
+	bls "github.com/KLYN74R/Web1337Golang/crypto_primitives/bls"
+	ed25519 "github.com/KLYN74R/Web1337Golang/crypto_primitives/ed25519"
+	pqc "github.com/KLYN74R/Web1337Golang/crypto_primitives/pqc"
 )
 
 func Ed25519Process() bool {
 
-	myPubKey, myPrivateKey := crypto_primitives.GenerateEd25519KeyPair()
+	myPubKey, myPrivateKey := ed25519.GenerateKeyPair()
 
 	fmt.Println("PubKey is ", myPubKey)
 
 	fmt.Println("PrivateKey is ", myPrivateKey)
 
-	signa := crypto_primitives.GenerateEd25519Signature(myPrivateKey, "Hello KLY")
+	signa := ed25519.GenerateSignature(myPrivateKey, "Hello KLY")
 
 	fmt.Println("Signa is ", signa)
 
-	isOk := crypto_primitives.VerifyEd25519Signature("Hello KLY", myPubKey, signa)
+	isOk := ed25519.VerifySignature("Hello KLY", myPubKey, signa)
 
 	fmt.Println("Is ok =>", isOk)
 
@@ -36,17 +38,17 @@ func Ed25519Process() bool {
 
 func BlissProcess() bool {
 
-	myPubKey, myPrivateKey := crypto_primitives.GenerateBlissKeypair()
+	myPubKey, myPrivateKey := pqc.GenerateBlissKeypair()
 
 	fmt.Println("PubKey is ", myPubKey)
 
 	fmt.Println("PrivateKey is ", myPrivateKey)
 
-	signa := crypto_primitives.GenerateBlissSignature(myPrivateKey, "Hello KLY")
+	signa := pqc.GenerateBlissSignature(myPrivateKey, "Hello KLY")
 
 	fmt.Println("Signa is ", signa)
 
-	isOk := crypto_primitives.VerifyBlissSignature("Hello KLY", myPubKey, signa)
+	isOk := pqc.VerifyBlissSignature("Hello KLY", myPubKey, signa)
 
 	fmt.Println("Is ok =>", isOk)
 
@@ -56,17 +58,17 @@ func BlissProcess() bool {
 
 func DilithiumProcess() bool {
 
-	myPubKey, myPrivateKey := crypto_primitives.GenerateDilithiumKeypair()
+	myPubKey, myPrivateKey := pqc.GenerateDilithiumKeypair()
 
 	fmt.Println("PubKey is ", myPubKey)
 
 	fmt.Println("PrivateKey is ", myPrivateKey)
 
-	signa := crypto_primitives.GenerateDilithiumSignature(myPrivateKey, "Hello KLY")
+	signa := pqc.GenerateDilithiumSignature(myPrivateKey, "Hello KLY")
 
 	fmt.Println("Signa is ", signa)
 
-	isOk := crypto_primitives.VerifyDilithiumSignature("Hello KLY", myPubKey, signa)
+	isOk := pqc.VerifyDilithiumSignature("Hello KLY", myPubKey, signa)
 
 	fmt.Println("Is ok =>", isOk)
 
@@ -78,7 +80,7 @@ func BlsProcess() bool {
 
 	// Generate keypair
 
-	privateKey, publicKey := crypto_primitives.GenerateBlsKeypair()
+	privateKey, publicKey := bls.GenerateKeypair()
 
 	fmt.Println("Privatekey is => ", privateKey)
 
@@ -88,49 +90,49 @@ func BlsProcess() bool {
 
 	message := "Hello KLY"
 
-	signa := crypto_primitives.GenerateBlsSignature(privateKey, message)
+	signa := bls.GenerateSignature(privateKey, message)
 
 	fmt.Println("Signa is => ", signa)
 
 	// Now verify (True Positive)
-	fmt.Println("Is ok with norm message => ", crypto_primitives.VerifyBlsSignature(publicKey, message, signa))
+	fmt.Println("Is ok with norm message => ", bls.VerifySignature(publicKey, message, signa))
 
 	// Now verify with wrong msg (True Negative)
-	fmt.Println("Is ok with norm message => ", crypto_primitives.VerifyBlsSignature(publicKey, "Hello badass", signa))
+	fmt.Println("Is ok with norm message => ", bls.VerifySignature(publicKey, "Hello badass", signa))
 
 	// Now generate more keypairs to test aggregation
 
-	privateKey1, publicKey1 := crypto_primitives.GenerateBlsKeypair()
-	_, publicKey2 := crypto_primitives.GenerateBlsKeypair()
-	_, publicKey3 := crypto_primitives.GenerateBlsKeypair()
+	privateKey1, publicKey1 := bls.GenerateKeypair()
+	_, publicKey2 := bls.GenerateKeypair()
+	_, publicKey3 := bls.GenerateKeypair()
 
-	signa1 := crypto_primitives.GenerateBlsSignature(privateKey1, message)
+	signa1 := bls.GenerateSignature(privateKey1, message)
 	// signa2 := crypto_primitives.GenerateBlsSignature(privateKey2, message)
 	// signa3 := crypto_primitives.GenerateBlsSignature(privateKey3, message)
 
-	aggregatedSigna := crypto_primitives.AggregateBlsSignatures([]string{signa, signa1})
+	aggregatedSigna := bls.AggregateSignatures([]string{signa, signa1})
 
 	fmt.Println("Aggregated signa is => ", aggregatedSigna)
 
 	// Aggregate pubkeys
 
-	rootPubKey := crypto_primitives.AggregateBlsPubKeys([]string{publicKey, publicKey1, publicKey2, publicKey3})
+	rootPubKey := bls.AggregatePubKeys([]string{publicKey, publicKey1, publicKey2, publicKey3})
 
 	fmt.Println("RootPubKey is => ", rootPubKey)
 
 	// Verify with threshold
 
-	aggregatedPubOfSigners := crypto_primitives.AggregateBlsPubKeys([]string{publicKey, publicKey1})
+	aggregatedPubOfSigners := bls.AggregatePubKeys([]string{publicKey, publicKey1})
 
 	fmt.Println("Aggregated 0 and 1 is => ", aggregatedPubOfSigners)
 
-	aggregatedPub23 := crypto_primitives.AggregateBlsPubKeys([]string{publicKey2, publicKey3})
+	aggregatedPub23 := bls.AggregatePubKeys([]string{publicKey2, publicKey3})
 
 	fmt.Println("Aggregated 2 and 3 is => ", aggregatedPub23)
 
-	fmt.Println("Their sum => ", crypto_primitives.AggregateBlsPubKeys([]string{aggregatedPubOfSigners, aggregatedPub23}))
+	fmt.Println("Their sum => ", bls.AggregatePubKeys([]string{aggregatedPubOfSigners, aggregatedPub23}))
 
-	fmt.Println("Is threshold reached => ", crypto_primitives.VerifyBlsThresholdSignature(aggregatedPubOfSigners, aggregatedSigna, rootPubKey, message, []string{publicKey2, publicKey3}, 2))
+	fmt.Println("Is threshold reached => ", bls.VerifyThresholdSignature(aggregatedPubOfSigners, aggregatedSigna, rootPubKey, message, []string{publicKey2, publicKey3}, 2))
 
 	return true
 
