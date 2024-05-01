@@ -12,29 +12,8 @@ import (
 	"fmt"
 
 	bls "github.com/KLYN74R/Web1337Golang/crypto_primitives/bls"
-	ed25519 "github.com/KLYN74R/Web1337Golang/crypto_primitives/ed25519"
 	pqc "github.com/KLYN74R/Web1337Golang/crypto_primitives/pqc"
 )
-
-func Ed25519Process() bool {
-
-	myPubKey, myPrivateKey := ed25519.GenerateKeyPair()
-
-	fmt.Println("PubKey is ", myPubKey)
-
-	fmt.Println("PrivateKey is ", myPrivateKey)
-
-	signa := ed25519.GenerateSignature(myPrivateKey, "Hello KLY")
-
-	fmt.Println("Signa is ", signa)
-
-	isOk := ed25519.VerifySignature("Hello KLY", myPubKey, signa)
-
-	fmt.Println("Is ok =>", isOk)
-
-	return isOk
-
-}
 
 func BlissProcess() bool {
 

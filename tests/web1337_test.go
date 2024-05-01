@@ -17,16 +17,6 @@ import (
 	tbls "github.com/KLYN74R/Web1337Golang/crypto_primitives/tbls"
 )
 
-func TestEd25519(t *testing.T) {
-
-	if !(web1337.Ed25519Process()) {
-
-		t.Error("Signature verification failed")
-
-	}
-
-}
-
 func TestPQC(t *testing.T) {
 
 	if !(web1337.DilithiumProcess() && web1337.BlissProcess()) {

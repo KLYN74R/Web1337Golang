@@ -2,18 +2,64 @@ package ed25519
 
 import (
 	"crypto/ed25519"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 
 	"github.com/btcsuite/btcutil/base58"
+	"github.com/tyler-smith/go-bip32"
+	"github.com/tyler-smith/go-bip39"
 )
 
-func GenerateKeyPair() (string, string) {
+type Ed25519Box struct {
+	Mnemonic  string
+	Bip44Path []uint32
+	Pub, Prv  string
+}
 
-	publicKey, privateKey, _ := ed25519.GenerateKey(rand.Reader)
+func GenerateKeyPair(mnemonic, mnemonicPassword string, bip44DerivePath []uint32) Ed25519Box {
 
-	return base58.Encode(publicKey), hex.EncodeToString(privateKey[:32])
+	if mnemonic == "" {
+
+		// Generate mnemonic if no pre-set
+
+		entropy, _ := bip39.NewEntropy(256)
+
+		mnemonic, _ = bip39.NewMnemonic(entropy)
+
+	}
+
+	// Now generate seed from 24-word mnemonic phrase (24 words = 256 bit security)
+	// Seed has 64 bytes
+	seed := bip39.NewSeed(mnemonic, mnemonicPassword) // password might be ""(empty) but it's not recommended
+
+	// Generate master keypair from seed
+
+	masterPrivateKey, _ := bip32.NewMasterKey(seed)
+
+	// Now, to derive appropriate keypair - run the cycle over uint32 path-milestones and derive child keypairs
+
+	// In case bip44Path empty - set the default one
+
+	if len(bip44DerivePath) == 0 {
+
+		bip44DerivePath = []uint32{44, 7331, 0, 0}
+
+	}
+
+	// Start derivation from master private key
+	var childKey *bip32.Key = masterPrivateKey
+
+	for pathPart := range bip44DerivePath {
+
+		childKey, _ = childKey.NewChildKey(bip32.FirstHardenedChild + uint32(pathPart))
+
+	}
+
+	// Now, based on this - get the appropriate keypair
+
+	publicKeyAsBytes, privateKeyAsBytes := generateKeyPairFromSeed(childKey.Key)
+
+	return Ed25519Box{Mnemonic: mnemonic, Bip44Path: bip44DerivePath, Pub: base58.Encode(publicKeyAsBytes), Prv: hex.EncodeToString(privateKeyAsBytes)}
 
 }
 
@@ -47,5 +93,19 @@ func VerifySignature(stringMessage, base58PubKey, base64Signature string) bool {
 	signature, _ := base64.StdEncoding.DecodeString(base64Signature)
 
 	return ed25519.Verify(publicKey, msgAsBytes, signature)
+
+}
+
+// Private inner function
+
+func generateKeyPairFromSeed(seed []byte) ([]byte, []byte) {
+
+	publicKey := make([]byte, 32)
+
+	privateKey := ed25519.NewKeyFromSeed(seed)
+
+	copy(publicKey, privateKey[32:])
+
+	return publicKey, privateKey[:32]
 
 }

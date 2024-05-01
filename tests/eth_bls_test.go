@@ -22,7 +22,6 @@ func TestEthBls(t *testing.T) {
 	// Create signature
 	signature := secretKey.Sign(message)
 
-	// Вывод результатов
 	fmt.Printf("Secret Key: %s\n", secretKey.GetHexString())
 	fmt.Printf("Public Key: %s\n", publicKey.SerializeToHexStr())
 	fmt.Printf("Message: %s\n", string(message))
