@@ -1,9 +1,11 @@
 package ed25519
 
 import (
+	"crypto"
 	"crypto/ed25519"
+	"crypto/rand"
+	"crypto/x509"
 	"encoding/base64"
-	"encoding/hex"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/tyler-smith/go-bip32"
@@ -57,23 +59,37 @@ func GenerateKeyPair(mnemonic, mnemonicPassword string, bip44DerivePath []uint32
 
 	// Now, based on this - get the appropriate keypair
 
-	publicKeyAsBytes, privateKeyAsBytes := generateKeyPairFromSeed(childKey.Key)
+	publicKeyObject, privateKeyObject := generateKeyPairFromSeed(childKey.Key)
 
-	return Ed25519Box{Mnemonic: mnemonic, Bip44Path: bip44DerivePath, Pub: base58.Encode(publicKeyAsBytes), Prv: hex.EncodeToString(privateKeyAsBytes)}
+	// Export keypair
+
+	pubKeyBytes, _ := x509.MarshalPKIXPublicKey(publicKeyObject)
+
+	privKeyBytes, _ := x509.MarshalPKCS8PrivateKey(privateKeyObject)
+
+	return Ed25519Box{Mnemonic: mnemonic, Bip44Path: bip44DerivePath, Pub: base58.Encode(pubKeyBytes[12:]), Prv: base64.StdEncoding.EncodeToString(privKeyBytes)}
 
 }
 
 // Returns signature in base64(to use it in transaction later)
 
-func GenerateSignature(privateKey, msg string) string {
+func GenerateSignature(privateKeyAsBase64, msg string) string {
 
-	privateKeyAsBytes, _ := hex.DecodeString(privateKey)
+	// Decode private key from base64 to raw bytes
 
-	privateKeyFromSeed := ed25519.NewKeyFromSeed(privateKeyAsBytes)
+	privateKeyAsBytes, _ := base64.StdEncoding.DecodeString(privateKeyAsBase64)
+
+	// Deserialize private key
+
+	privKeyInterface, _ := x509.ParsePKCS8PrivateKey(privateKeyAsBytes)
+
+	finalPrivateKey, _ := privKeyInterface.(ed25519.PrivateKey)
 
 	msgAsBytes := []byte(msg)
 
-	return base64.StdEncoding.EncodeToString(ed25519.Sign(privateKeyFromSeed, msgAsBytes))
+	signature, _ := finalPrivateKey.Sign(rand.Reader, msgAsBytes, crypto.Hash(0))
+
+	return base64.StdEncoding.EncodeToString(signature)
 
 }
 
@@ -88,24 +104,30 @@ func VerifySignature(stringMessage, base58PubKey, base64Signature string) bool {
 
 	msgAsBytes := []byte(stringMessage)
 
-	publicKey := base58.Decode(base58PubKey)
+	publicKeyAsBytesWithNoAsnPrefix := base58.Decode(base58PubKey)
+
+	// Add ASN.1 prefix
+
+	pubKeyAsBytesWithAsnPrefix := append([]byte{0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x03, 0x21, 0x00}, publicKeyAsBytesWithNoAsnPrefix...)
+
+	pubKeyInterface, _ := x509.ParsePKIXPublicKey(pubKeyAsBytesWithAsnPrefix)
+
+	finalPubKey, _ := pubKeyInterface.(ed25519.PublicKey)
 
 	signature, _ := base64.StdEncoding.DecodeString(base64Signature)
 
-	return ed25519.Verify(publicKey, msgAsBytes, signature)
+	return ed25519.Verify(finalPubKey, msgAsBytes, signature)
 
 }
 
 // Private inner function
 
-func generateKeyPairFromSeed(seed []byte) ([]byte, []byte) {
-
-	publicKey := make([]byte, 32)
+func generateKeyPairFromSeed(seed []byte) (ed25519.PublicKey, ed25519.PrivateKey) {
 
 	privateKey := ed25519.NewKeyFromSeed(seed)
 
-	copy(publicKey, privateKey[32:])
+	pubKey, _ := privateKey.Public().(ed25519.PublicKey)
 
-	return publicKey, privateKey[:32]
+	return pubKey, privateKey
 
 }
