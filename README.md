@@ -1,10 +1,8 @@
 <div align="center">
 
-# <b>Wellcome to Web1337</b>
+# **Wellcome to Web1337**
 
-This is the version for Golang devs
-
-<img src="./Web1337Golang.png">
+![cover](./SDKCover.svg)
 
 </div>
 
