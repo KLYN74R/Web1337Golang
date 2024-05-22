@@ -10,12 +10,39 @@ package web1337
 
 import (
 	"fmt"
+	"net/http"
 
 	bls "github.com/KLYN74R/Web1337Golang/crypto_primitives/bls"
 	pqc "github.com/KLYN74R/Web1337Golang/crypto_primitives/pqc"
+
+	EPOCH_EDGE_OPERATIONS "github.com/KLYN74R/Web1337Golang/epoch_edge_operations"
+	SIGNATURES_TYPES "github.com/KLYN74R/Web1337Golang/signatures_types"
+	TXS_TYPES "github.com/KLYN74R/Web1337Golang/txs_types"
 )
 
+type Options struct {
+	SymbioteID      string
+	WorkflowVersion int
+	NodeURL         string
+	ProxyURL        string
+}
+
+type SymbioteInfo struct {
+	NodeURL         string
+	WorkflowVersion int
+}
+
+type Web1337 struct {
+	Symbiotes       map[string]SymbioteInfo
+	CurrentSymbiote string
+	Proxy           http.RoundTripper
+}
+
 func BlissProcess() bool {
+
+	fmt.Println("Value is => ", SIGNATURES_TYPES.DEFAULT_SIG)
+	fmt.Println("Value is => ", TXS_TYPES.CONTRACT_CALL)
+	fmt.Println("Value is => ", EPOCH_EDGE_OPERATIONS.REMOVE_FROM_WAITING_ROOM)
 
 	myPubKey, myPrivateKey := pqc.GenerateBlissKeypair()
 
@@ -115,10 +142,4 @@ func BlsProcess() bool {
 
 	return true
 
-}
-
-type Web1337 struct {
-	symbioteID, nodeURL, proxyURL string
-
-	workflowVersion int64
 }
