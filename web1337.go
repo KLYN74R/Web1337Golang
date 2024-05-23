@@ -44,7 +44,8 @@ type Web1337 struct {
 }
 
 func NewWeb1337(options Options) (*Web1337, error) {
-	sdk := &Web1337{
+
+	web1337 := &Web1337{
 		Symbiotes: make(map[string]SymbioteInfo),
 	}
 
@@ -65,18 +66,18 @@ func NewWeb1337(options Options) (*Web1337, error) {
 		} else {
 			return nil, errors.New("unsupported proxy URL")
 		}
-		sdk.Proxy = transport
+		web1337.Proxy = transport
 	} else {
-		sdk.Proxy = http.DefaultTransport
+		web1337.Proxy = http.DefaultTransport
 	}
 
-	sdk.CurrentSymbiote = options.SymbioteID
-	sdk.Symbiotes[options.SymbioteID] = SymbioteInfo{
+	web1337.CurrentSymbiote = options.SymbioteID
+	web1337.Symbiotes[options.SymbioteID] = SymbioteInfo{
 		NodeURL:         options.NodeURL,
 		WorkflowVersion: options.WorkflowVersion,
 	}
 
-	return sdk, nil
+	return web1337, nil
 }
 
 func (sdk *Web1337) getRequest(url string) ([]byte, error) {
