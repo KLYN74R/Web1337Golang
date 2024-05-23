@@ -5,6 +5,7 @@ import (
 
 	ed25519 "github.com/KLYN74R/Web1337Golang/crypto_primitives/ed25519"
 	"github.com/KLYN74R/Web1337Golang/crypto_primitives/pqc"
+	tbls "github.com/KLYN74R/Web1337Golang/crypto_primitives/tbls"
 
 	SIGNATURES_TYPES "github.com/KLYN74R/Web1337Golang/signatures_types"
 	TXS_TYPES "github.com/KLYN74R/Web1337Golang/txs_types"
@@ -80,7 +81,7 @@ func (web1337 *Web1337) CreateMultisigTransaction(rootPubKey, aggregatedPubOfAct
 }
 
 // BuildPartialSignatureWithTxData builds a partial signature with transaction data
-func (web1337 *Web1337) BuildPartialSignatureWithTxData(hexID string, sharedPayload []byte, originShard string, nonce, fee int, recipient string, amountInKLY int, rev_t *int) (string, error) {
+func (web1337 *Web1337) BuildPartialSignatureWithTxData(hexID string, sharedPayload []string, originShard string, nonce, fee int, recipient string, amountInKLY int, rev_t *int) (string, error) {
 
 	coreWorkflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
 
@@ -95,13 +96,13 @@ func (web1337 *Web1337) BuildPartialSignatureWithTxData(hexID string, sharedPayl
 	}
 
 	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%d", web1337.CurrentSymbiote, coreWorkflowVersion, originShard, TXS_TYPES.TX, payloadForTblsTransaction, nonce, fee)
-	partialSignature := signTBLS(hexID, sharedPayload, dataToSign)
+	partialSignature := tbls.GeneratePartialSignature(hexID, dataToSign, sharedPayload)
 
 	return partialSignature, nil
 }
 
 // CreateThresholdTransaction creates a threshold transaction
-func (sdk *Web1337) CreateThresholdTransaction(tblsRootPubkey string, partialSignaturesArray []string, nonce int, recipient string, amountInKLY, fee int, rev_t *int) TransactionTemplate {
+func (sdk *Web1337) CreateThresholdTransaction(tblsRootPubkey string, partialSignatures, idsOfSigners []string, nonce int, recipient string, amountInKLY, fee int, rev_t *int) TransactionTemplate {
 
 	coreWorkflowVersion := sdk.Symbiotes[sdk.CurrentSymbiote].WorkflowVersion
 
@@ -116,7 +117,7 @@ func (sdk *Web1337) CreateThresholdTransaction(tblsRootPubkey string, partialSig
 	}
 
 	thresholdSigTransaction := sdk.GetTransactionTemplate(coreWorkflowVersion, tblsRootPubkey, TXS_TYPES.TX, nonce, fee, tblsPayload)
-	thresholdSigTransaction.Sig = buildSignature(partialSignaturesArray)
+	thresholdSigTransaction.Sig = tbls.BuildRootSignature(partialSignatures, idsOfSigners)
 
 	return thresholdSigTransaction
 }
@@ -149,15 +150,4 @@ func (sdk *Web1337) CreatePostQuantumTransaction(originShard, sigType, yourAddre
 	}
 
 	return transaction, nil
-}
-
-// Mocked cryptographic functions
-func signTBLS(hexID string, sharedPayload []byte, dataToSign string) string {
-	// Placeholder for the real TBLS signature generation
-	return "partialSignature"
-}
-
-func buildSignature(partialSignaturesArray []string) string {
-	// Placeholder for the real TBLS signature aggregation
-	return "aggregatedSignature"
 }
