@@ -1,9 +1,7 @@
 package tests
 
 import (
-	"encoding/hex"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"lukechampine.com/blake3"
@@ -13,18 +11,20 @@ func TestBlake3SimplePerformance(t *testing.T) {
 
 	// msg := []byte("Hello")
 
-	var blake3Hash [32]byte
+	fmt.Printf("%x", blake3.Sum256([]byte("43A+RQL4bDWVHQ/HwA2dWwdF5s1M9YDmgKRZ2EH/P/nA/6Cbb76n3eTh6DYUMLKaWS75uKxteAdaD4yxkDLvBw==")))
 
-	for i := 0; i < 1000000; i++ {
+	// var blake3Hash [32]byte
 
-		msg := []byte("Hello" + strconv.Itoa(i))
+	// for i := 0; i < 1; i++ {
 
-		blake3Hash = blake3.Sum256(msg)
+	// 	msg := []byte("Hello" + strconv.Itoa(i))
 
-	}
+	// 	blake3Hash = blake3.Sum256(msg)
 
-	fmt.Println(hex.EncodeToString(blake3Hash[:]))
+	// }
 
-	fmt.Printf("%x", blake3Hash)
+	// fmt.Println(hex.EncodeToString(blake3Hash[:]))
+
+	// fmt.Printf("%x", blake3Hash)
 
 }

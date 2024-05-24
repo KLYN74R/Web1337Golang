@@ -15,3 +15,7 @@ func (sdk *Web1337) CallContract(contractId, method string, params map[string]in
 func (sdk *Web1337) deployContractToWvm(bytecode string) {
 	// return sdk.getRequest("/quorum_thread_checkpoint")
 }
+
+func (sdk *Web1337) subscribeForEventsByContract(contractId, eventId string) {
+	// return sdk.getRequest("/quorum_thread_checkpoint")
+}
