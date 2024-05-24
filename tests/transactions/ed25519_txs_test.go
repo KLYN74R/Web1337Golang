@@ -9,7 +9,7 @@ import (
 	ed25519 "github.com/KLYN74R/Web1337Golang/crypto_primitives/ed25519"
 )
 
-func TestEd25519Transactions(t *testing.T) {
+func TestEd25519ToEd25519Transaction(t *testing.T) {
 
 	myKeypair := ed25519.Ed25519Box{
 
@@ -20,13 +20,13 @@ func TestEd25519Transactions(t *testing.T) {
 	}
 
 	var (
-		shardID      = "2VEzwUdvSRuv1k2JaAEaMiL7LLNDTUf9bXSapqccCcSb"
-		recipient    = "nXSYHp74u88zKPiRi7t22nv4WCBHXUBpGrVw3V93f2s"
-		from         = myKeypair.Pub
-		myPrivateKey = myKeypair.Prv
-		nonce        = 0
-		fee          = 1
-		amountInKLY  = 13
+		shardID              = "2VEzwUdvSRuv1k2JaAEaMiL7LLNDTUf9bXSapqccCcSb"
+		recipient            = "nXSYHp74u88zKPiRi7t22nv4WCBHXUBpGrVw3V93f2s"
+		from                 = myKeypair.Pub
+		myPrivateKey         = myKeypair.Prv
+		nonce                = uint(0)
+		fee          float32 = 0.005
+		amountInKLY  float32 = 0.2
 	)
 
 	myOptions := web1337.Options{
@@ -38,12 +38,20 @@ func TestEd25519Transactions(t *testing.T) {
 
 	defTx, _ := sdkHandler.CreateDefaultTransaction(shardID, from, myPrivateKey, nonce, fee, recipient, amountInKLY, nil)
 
-	jsonData, _ := json.Marshal(defTx)
+	jsonData, _ := json.MarshalIndent(defTx, "", "  ")
 
 	fmt.Println(string(jsonData))
 
-	// let signedTx = await web1337.createDefaultTransaction(shardID,from,myPrivateKey,nonce,recipient,fee,amountInKLY);
+	// Now create Ed25519 to Multisig tx
 
-	// console.log(signedTx);
+	msigRecipient := "7GPupbq1vtKUgaqVeHiDbEJcxS7sSjwPnbht4eRaDBAEJv8ZKHNCSu2Am3CuWnHjta"
+
+	var rev_t int = 0
+
+	msigTx, _ := sdkHandler.CreateDefaultTransaction(shardID, from, myPrivateKey, nonce, fee, msigRecipient, amountInKLY, &rev_t)
+
+	jsonDataMsig, _ := json.MarshalIndent(msigTx, "", "  ")
+
+	fmt.Println(string(jsonDataMsig))
 
 }
