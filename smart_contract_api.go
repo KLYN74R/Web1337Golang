@@ -17,7 +17,7 @@ func (sdk *Web1337) GetContractStorage(contractId, storageName string) ([]byte, 
 	return sdk.getRequest("/account/" + contractId + "_STORAGE_" + storageName)
 }
 
-func (sdk *Web1337) deployContractToWvm(web1337 *Web1337, originShard, yourAddress, yourPrivateKey, sigType, bytecode, lang string, nonce uint, fee float32, constructorParams []string) TransactionTemplate {
+func (sdk *Web1337) CreateContractDeploymentTx(web1337 *Web1337, originShard, yourAddress, yourPrivateKey, sigType string, nonce uint, fee float32, bytecode, lang string, constructorParams []string) TransactionTemplate {
 
 	/*
 
@@ -70,24 +70,37 @@ func (sdk *Web1337) deployContractToWvm(web1337 *Web1337, originShard, yourAddre
 
 }
 
-func (web1337 *Web1337) CallContract(originShard, yourPub, yourPrv, contractId, method string, params map[string]interface{}, injects []string) {
+func (web1337 *Web1337) CreateContractCallTx(originShard, yourPub, yourPrv, sigType string, nonce uint, fee float32, contractId, method string, params map[string]interface{}, injects []string) TransactionTemplate {
 
-	// coreWorkflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
+	workflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
 
-	// payload := map[string]interface{}{
-	// 	"type":   SIGNATURES_TYPES.DEFAULT_SIG,
-	// 	"to":     recipient,
-	// 	"amount": amountInKLY,
-	// }
+	payload := map[string]interface{}{
+		"type":       sigType,
+		"contractID": contractId,
+		"method":     method,
+		"params":     params,
+		"injects":    injects,
+	}
 
-	// // In case we send from Ed25519 to BLS
-	// if rev_t != nil {
-	// 	payload["rev_t"] = *rev_t
-	// }
+	txTemplate := web1337.GetTransactionTemplate(workflowVersion, yourPub, TXS_TYPES.CONTRACT_CALL, nonce, fee, payload)
 
-	// txTemplate := web1337.GetTransactionTemplate(coreWorkflowVersion, yourAddress, TXS_TYPES.TX, nonce, fee, payload)
+	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%f", web1337.CurrentSymbiote, workflowVersion, originShard, TXS_TYPES.CONTRACT_DEPLOY, mapToJSON(payload), nonce, fee)
 
-	// return sdk.getRequest("/symbiote_info")
+	switch sigType {
+
+	case SIGNATURES_TYPES.DEFAULT_SIG:
+		txTemplate.Sig = ed25519.GenerateSignature(yourPrv, dataToSign)
+
+	case SIGNATURES_TYPES.POST_QUANTUM_BLISS:
+		txTemplate.Sig = pqc.GenerateBlissSignature(yourPrv, dataToSign)
+
+	case SIGNATURES_TYPES.POST_QUANTUM_DIL:
+		txTemplate.Sig = pqc.GenerateDilithiumSignature(yourPrv, dataToSign)
+
+	}
+
+	return txTemplate
+
 }
 
 func (sdk *Web1337) subscribeForEventsByContract(contractId, eventId string) {
