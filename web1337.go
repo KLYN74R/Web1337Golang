@@ -38,12 +38,12 @@ type Web1337 struct {
 	Proxy           http.RoundTripper
 }
 
-func mapToJSON(data map[string]interface{}) (string, error) {
+func mapToJSON(data map[string]interface{}) string {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return "", err
+		return ""
 	}
-	return string(jsonData), nil
+	return string(jsonData)
 }
 
 func NewWeb1337(options Options) (*Web1337, error) {

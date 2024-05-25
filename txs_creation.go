@@ -21,7 +21,7 @@ type TransactionTemplate struct {
 	Sig     string      `json:"sig"`
 }
 
-func (web1337 *Web1337) GetTransactionTemplate(workflowVersion uint, creator, txType string, nonce uint, fee float32, payload interface{}) TransactionTemplate {
+func (web1337 *Web1337) GetTransactionTemplate(workflowVersion uint, creator, txType string, nonce uint, fee float32, payload map[string]interface{}) TransactionTemplate {
 
 	return TransactionTemplate{
 		V:       workflowVersion,
@@ -51,7 +51,7 @@ func (web1337 *Web1337) CreateDefaultTransaction(originShard, yourAddress, yourP
 
 	txTemplate := web1337.GetTransactionTemplate(coreWorkflowVersion, yourAddress, TXS_TYPES.TX, nonce, fee, payload)
 
-	dataToSign := web1337.CurrentSymbiote + string(coreWorkflowVersion) + originShard + TXS_TYPES.TX + fmt.Sprintf("%v", payload) + string(nonce) + fmt.Sprintf("%f", fee)
+	dataToSign := web1337.CurrentSymbiote + string(coreWorkflowVersion) + originShard + TXS_TYPES.TX + mapToJSON(payload) + string(nonce) + fmt.Sprintf("%f", fee)
 
 	txTemplate.Sig = ed25519.GenerateSignature(yourPrivateKeyAsHex, dataToSign)
 
@@ -95,7 +95,7 @@ func (web1337 *Web1337) BuildPartialSignatureWithTxData(hexID string, sharedPayl
 		payloadForTblsTransaction["rev_t"] = *rev_t
 	}
 
-	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%d", web1337.CurrentSymbiote, coreWorkflowVersion, originShard, TXS_TYPES.TX, payloadForTblsTransaction, nonce, fee)
+	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%d", web1337.CurrentSymbiote, coreWorkflowVersion, originShard, TXS_TYPES.TX, mapToJSON(payloadForTblsTransaction), nonce, fee)
 	partialSignature := tbls.GeneratePartialSignature(hexID, dataToSign, sharedPayload)
 
 	return partialSignature, nil
