@@ -39,11 +39,15 @@ type Web1337 struct {
 }
 
 func mapToJSON(data map[string]interface{}) string {
+
 	jsonData, err := json.Marshal(data)
+
 	if err != nil {
 		return ""
 	}
+
 	return string(jsonData)
+
 }
 
 func NewWeb1337(options Options) (*Web1337, error) {
@@ -53,25 +57,41 @@ func NewWeb1337(options Options) (*Web1337, error) {
 	}
 
 	if options.ProxyURL != "" {
+
 		var transport http.RoundTripper
+
 		if options.ProxyURL[:4] == "http" {
+
 			proxyURL, err := url.Parse(options.ProxyURL)
+
 			if err != nil {
 				return nil, err
 			}
+
 			transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+
 		} else if options.ProxyURL[:5] == "socks" {
+
 			dialer, err := proxy.SOCKS5("tcp", options.ProxyURL[7:], nil, proxy.Direct)
+
 			if err != nil {
 				return nil, err
 			}
+
 			transport = &http.Transport{Dial: dialer.Dial}
+
 		} else {
+
 			return nil, errors.New("unsupported proxy URL")
+
 		}
+
 		web1337.Proxy = transport
+
 	} else {
+
 		web1337.Proxy = http.DefaultTransport
+
 	}
 
 	web1337.CurrentSymbiote = options.SymbioteID
@@ -84,27 +104,36 @@ func NewWeb1337(options Options) (*Web1337, error) {
 }
 
 func (sdk *Web1337) getRequest(url string) ([]byte, error) {
+
 	client := &http.Client{Transport: sdk.Proxy, Timeout: 10 * time.Second}
+
 	resp, err := client.Get(sdk.Symbiotes[sdk.CurrentSymbiote].NodeURL + url)
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 
 	return io.ReadAll(resp.Body)
 }
 
 func (sdk *Web1337) postRequest(url string, payload interface{}) ([]byte, error) {
+
 	client := &http.Client{Transport: sdk.Proxy, Timeout: 10 * time.Second}
+
 	jsonPayload, err := json.Marshal(payload)
+
 	if err != nil {
 		return nil, err
 	}
 
 	resp, err := client.Post(sdk.Symbiotes[sdk.CurrentSymbiote].NodeURL+url, "application/json", bytes.NewBuffer(jsonPayload))
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 
 	return io.ReadAll(resp.Body)
