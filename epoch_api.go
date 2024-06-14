@@ -6,7 +6,7 @@ func (sdk *Web1337) GetCurrentEpochOnThread(threadID string) ([]byte, error) {
 
 }
 
-func (sdk *Web1337) GetCurrentShardLeaders() ([]byte, error) {
+func (sdk *Web1337) GetCurrentLeadersOnShards() ([]byte, error) {
 
 	return sdk.getRequest("/current_shards_leaders")
 
