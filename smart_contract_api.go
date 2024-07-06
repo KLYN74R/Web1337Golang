@@ -26,7 +26,7 @@ func (sdk *Web1337) CreateContractDeploymentTx(web1337 *Web1337, originShard, yo
 	   {
 	       v: 0,
 	       creator: '2VEzwUdvSRuv1k2JaAEaMiL7LLNDTUf9bXSapqccCcSb',
-	       type: 'CONTRACT_DEPLOY',
+	       type: 'WVM_CONTRACT_DEPLOY',
 	       nonce: 0,
 	       fee: 1,
 	       payload: {
@@ -49,9 +49,9 @@ func (sdk *Web1337) CreateContractDeploymentTx(web1337 *Web1337, originShard, yo
 		"constructorParams": constructorParams,
 	}
 
-	txTemplate := sdk.GetTransactionTemplate(workflowVersion, yourAddress, TXS_TYPES.CONTRACT_DEPLOY, nonce, fee, payload)
+	txTemplate := sdk.GetTransactionTemplate(workflowVersion, yourAddress, TXS_TYPES.WVM_CONTRACT_DEPLOY, nonce, fee, payload)
 
-	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%f", web1337.CurrentSymbiote, workflowVersion, originShard, TXS_TYPES.CONTRACT_DEPLOY, mapToJSON(payload), nonce, fee)
+	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%f", web1337.CurrentSymbiote, workflowVersion, originShard, TXS_TYPES.WVM_CONTRACT_DEPLOY, mapToJSON(payload), nonce, fee)
 
 	switch sigType {
 
@@ -82,9 +82,9 @@ func (web1337 *Web1337) CreateContractCallTx(originShard, yourPub, yourPrv, sigT
 		"injects":    injects,
 	}
 
-	txTemplate := web1337.GetTransactionTemplate(workflowVersion, yourPub, TXS_TYPES.CONTRACT_CALL, nonce, fee, payload)
+	txTemplate := web1337.GetTransactionTemplate(workflowVersion, yourPub, TXS_TYPES.WVM_CALL, nonce, fee, payload)
 
-	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%f", web1337.CurrentSymbiote, workflowVersion, originShard, TXS_TYPES.CONTRACT_DEPLOY, mapToJSON(payload), nonce, fee)
+	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%f", web1337.CurrentSymbiote, workflowVersion, originShard, TXS_TYPES.WVM_CONTRACT_DEPLOY, mapToJSON(payload), nonce, fee)
 
 	switch sigType {
 
