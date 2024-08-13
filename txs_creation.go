@@ -39,9 +39,9 @@ func (web1337 *Web1337) CreateDefaultTransaction(originShard, yourAddress, yourP
 	coreWorkflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
 
 	payload := map[string]interface{}{
-		"type":   SIGNATURES_TYPES.DEFAULT_SIG,
-		"to":     recipient,
-		"amount": amountInKLY,
+		"sigType": SIGNATURES_TYPES.DEFAULT_SIG,
+		"to":      recipient,
+		"amount":  amountInKLY,
 	}
 
 	// In case we send from Ed25519 to BLS
@@ -63,11 +63,11 @@ func (web1337 *Web1337) CreateMultisigTransaction(rootPubKey, aggregatedPubOfAct
 	coreWorkflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
 
 	payload := map[string]interface{}{
-		"type":   SIGNATURES_TYPES.MULTISIG_SIG,
-		"active": aggregatedPubOfActive,
-		"afk":    afkSigners,
-		"to":     recipient,
-		"amount": amountInKLY,
+		"sigType": SIGNATURES_TYPES.MULTISIG_SIG,
+		"active":  aggregatedPubOfActive,
+		"afk":     afkSigners,
+		"to":      recipient,
+		"amount":  amountInKLY,
 	}
 
 	if rev_t != nil {
@@ -86,9 +86,9 @@ func (web1337 *Web1337) BuildPartialSignatureWithTxData(hexID string, sharedPayl
 	coreWorkflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
 
 	payloadForTblsTransaction := map[string]interface{}{
-		"to":     recipient,
-		"amount": amountInKLY,
-		"type":   SIGNATURES_TYPES.TBLS_SIG,
+		"to":      recipient,
+		"amount":  amountInKLY,
+		"sigType": SIGNATURES_TYPES.TBLS_SIG,
 	}
 
 	if rev_t != nil {
@@ -107,9 +107,9 @@ func (sdk *Web1337) CreateThresholdTransaction(tblsRootPubkey string, partialSig
 	coreWorkflowVersion := sdk.Symbiotes[sdk.CurrentSymbiote].WorkflowVersion
 
 	tblsPayload := map[string]interface{}{
-		"to":     recipient,
-		"amount": amountInKLY,
-		"type":   SIGNATURES_TYPES.TBLS_SIG,
+		"to":      recipient,
+		"amount":  amountInKLY,
+		"sigType": SIGNATURES_TYPES.TBLS_SIG,
 	}
 
 	if rev_t != nil {
@@ -128,9 +128,9 @@ func (sdk *Web1337) CreatePostQuantumTransaction(originShard, sigType, yourAddre
 	coreWorkflowVersion := sdk.Symbiotes[sdk.CurrentSymbiote].WorkflowVersion
 
 	payload := map[string]interface{}{
-		"type":   sigType,
-		"to":     recipient,
-		"amount": amountInKLY,
+		"sigType": sigType,
+		"to":      recipient,
+		"amount":  amountInKLY,
 	}
 
 	if rev_t != nil {

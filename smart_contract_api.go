@@ -43,7 +43,7 @@ func (sdk *Web1337) CreateContractDeploymentTx(web1337 *Web1337, originShard, yo
 	workflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
 
 	payload := map[string]interface{}{
-		"type":              sigType,
+		"sigType":           sigType,
 		"bytecode":          bytecode,
 		"lang":              lang,
 		"constructorParams": constructorParams,
@@ -75,7 +75,7 @@ func (web1337 *Web1337) CreateContractCallTx(originShard, yourPub, yourPrv, sigT
 	workflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
 
 	payload := map[string]interface{}{
-		"type":       sigType,
+		"sigType":    sigType,
 		"contractID": contractId,
 		"method":     method,
 		"params":     params,
