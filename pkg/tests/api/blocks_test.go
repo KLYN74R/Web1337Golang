@@ -17,7 +17,10 @@ func TestGetBlockByBlockID(t *testing.T) {
 
 	blockID := "0:9GQ46rqY238rk2neSwgidap9ww5zbAN4dyqyC7j5ZnBK:15"
 
-	blockData, _ := sdkHandler.GetBlockByBlockID(blockID)
+	blockData, err := sdkHandler.GetBlockByBlockID(blockID)
+    if err != nil {
+        t.Fatalf("Error fetching block by ID: %v", err)
+    }
 
     fmt.Println("Result: ", string(blockData))
 }
@@ -34,7 +37,11 @@ func TestGetBlockBySID(t *testing.T) {
 	shard := "shard_0"
 	indexInShard := uint(1000)
 
-	blockData, _ := sdkHandler.GetBlockBySID(shard, indexInShard)
+	blockData, err := sdkHandler.GetBlockBySID(shard, indexInShard)
+
+    if err != nil {
+        t.Fatalf("Error fetching block by SID: %v", err)
+    }
 
     fmt.Println("Result: ", string(blockData))
 }
@@ -52,7 +59,11 @@ func TestGetLatestNBlocksOnShard(t *testing.T) {
     startIndex := uint(100)
     limit := uint(10)
 
-	blockData, _ := sdkHandler.GetLatestNBlocksOnShard(shard, startIndex, limit)
+	blockData, err := sdkHandler.GetLatestNBlocksOnShard(shard, startIndex, limit)
+
+    if err != nil {
+        t.Fatalf("Error fetching latest N blocks on shard: %v", err)
+    }
 
     fmt.Println("Result: ", string(blockData))
 }
@@ -66,7 +77,11 @@ func TestGetTotalBlocksAndTxsStats(t *testing.T) {
 
 	sdkHandler, _ := web1337.NewWeb1337(myOptions)
 
-	blockAndTxInfo, _ := sdkHandler.GetTotalBlocksAndTxsStats()
+	blockAndTxInfo, err := sdkHandler.GetTotalBlocksAndTxsStats()
 
-	fmt.Println("Result: ", string(blockAndTxInfo))
+	if err != nil {
+        t.Fatalf("Error fetching total blocks and transactions stats: %v", err)
+    }
+
+    fmt.Println("Result: ", string(blockAndTxInfo))
 }

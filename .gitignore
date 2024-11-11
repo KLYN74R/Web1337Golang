@@ -8,7 +8,6 @@
 
 # Go build output directories
 /bin/
-/pkg/
 /dist/
 
 # Go modules
