@@ -1,2 +1,56 @@
+# Binaries for programs and plugins
 *.exe
-.vscode
+*.dll
+*.so
+*.dylib
+*.out
+*.test
+
+# Go build output directories
+/bin/
+/pkg/
+/dist/
+
+# Go modules
+go.sum
+
+# Vendor directory
+/vendor/
+
+# Output of test runs
+*.cover
+*.cov
+
+# Logs and debug files
+*.log
+*.tmp
+*.pid
+
+# Generated files and directories
+gen/
+generated/
+public/build/
+public/js/
+
+# IDE settings
+.idea/
+*.iml
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Backup and swap files
+*.swp
+*.swo
+*.bak
+~$*
+
+# Env files (optional, for local configs)
+.env
+.env.*

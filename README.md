@@ -2,7 +2,7 @@
 
 # **Wellcome to Web1337**
 
-![cover](./SDKCover.svg)
+![cover](./cover.png)
 
 </div>
 
@@ -16,6 +16,7 @@ This SDK is designed to work with the KLY network. Currently the functionality i
 2) Creation of all types of transactions
 3) Interaction with smart contracts
 4) Interaction with system components of the network (staking, aliases and much more)
+5) Interaction with system API endpoints
 
 ## Note
 
