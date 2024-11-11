@@ -8,7 +8,6 @@ import (
 )
 
 func TestTBlsProcess(t *testing.T) {
-
 	/*
 		T = 2 (Threshold)
 		N = 3 (Number of group members)
