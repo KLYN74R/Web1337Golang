@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	web1337 "github.com/KLYN74R/Web1337Golang/pkg"
-	kly_bls "github.com/KLYN74R/Web1337Golang/pkg/crypto_primitives/bls"
+	web1337 "github.com/KLYN74R/Web1337Golang"
+	kly_bls "github.com/KLYN74R/Web1337Golang/crypto_primitives/bls"
 )
 
 func TestBlsTransaction(t *testing.T) {

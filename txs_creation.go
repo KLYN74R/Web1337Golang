@@ -3,12 +3,12 @@ package web1337
 import (
 	"fmt"
 
-	ed25519 "github.com/KLYN74R/Web1337Golang/pkg/crypto_primitives/ed25519"
-	"github.com/KLYN74R/Web1337Golang/pkg/crypto_primitives/pqc"
-	tbls "github.com/KLYN74R/Web1337Golang/pkg/crypto_primitives/tbls"
+	ed25519 "github.com/KLYN74R/Web1337Golang/crypto_primitives/ed25519"
+	"github.com/KLYN74R/Web1337Golang/crypto_primitives/pqc"
+	tbls "github.com/KLYN74R/Web1337Golang/crypto_primitives/tbls"
 
-	SIGNATURES_TYPES "github.com/KLYN74R/Web1337Golang/pkg/signature_types"
-	TXS_TYPES "github.com/KLYN74R/Web1337Golang/pkg/tx_types"
+	SIGNATURES_TYPES "github.com/KLYN74R/Web1337Golang/signature_types"
+	TXS_TYPES "github.com/KLYN74R/Web1337Golang/tx_types"
 )
 
 type TransactionTemplate struct {

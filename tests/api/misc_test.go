@@ -3,7 +3,7 @@ package tests
 import (
     "fmt"
     "testing"
-    web1337 "github.com/KLYN74R/Web1337Golang/pkg"
+    web1337 "github.com/KLYN74R/Web1337Golang"
 )
 
 func TestGetInfrastructureInfo(t *testing.T) {

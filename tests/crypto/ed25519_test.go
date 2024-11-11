@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	ed25519 "github.com/KLYN74R/Web1337Golang/pkg/crypto_primitives/ed25519"
+	ed25519 "github.com/KLYN74R/Web1337Golang/crypto_primitives/ed25519"
 )
 
 func TestEd25519(t *testing.T) {

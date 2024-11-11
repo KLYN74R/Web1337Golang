@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/KLYN74R/Web1337Golang/pkg/crypto_primitives/pqc"
+	"github.com/KLYN74R/Web1337Golang/crypto_primitives/pqc"
 )
 
 func TestDilithiumTransaction(t *testing.T) {

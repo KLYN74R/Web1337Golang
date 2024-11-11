@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	web1337 "github.com/KLYN74R/Web1337Golang/pkg"
-	ed25519 "github.com/KLYN74R/Web1337Golang/pkg/crypto_primitives/ed25519"
+	web1337 "github.com/KLYN74R/Web1337Golang"
+	ed25519 "github.com/KLYN74R/Web1337Golang/crypto_primitives/ed25519"
 )
 
 func TestEd25519ToEd25519Transaction(t *testing.T) {

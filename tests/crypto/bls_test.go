@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	kly_bls "github.com/KLYN74R/Web1337Golang/pkg/crypto_primitives/bls"
+	kly_bls "github.com/KLYN74R/Web1337Golang/crypto_primitives/bls"
 )
 
 func TestBlsProcess(t *testing.T) {
