@@ -20,16 +20,16 @@ func TestBlsTransaction(t *testing.T) {
 	aggregatedPubOfActive := kly_bls.AggregatePubKeys([]string{publicKey1, publicKey2})
 
 	var (
-		recipient   = "nXSYHp74u88zKPiRi7t22nv4WCBHXUBpGrVw3V93f2s"
-		from        = rootPubKey
+		recipient           = "nXSYHp74u88zKPiRi7t22nv4WCBHXUBpGrVw3V93f2s"
+		from                = rootPubKey
 		nonce       uint    = 0
 		fee         float32 = 0.00005
 		amountInKLY float32 = 0.2
-		afkSigners  = []string{publicKey3}
+		afkSigners          = []string{publicKey3}
 	)
 
 	myOptions := web1337.Options{
-		SymbioteID:      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		ChainID:         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		WorkflowVersion: 1,
 	}
 

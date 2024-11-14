@@ -18,24 +18,24 @@ func TestEd25519ToEd25519Transaction(t *testing.T) {
 	}
 
 	var (
-		shardID     = "2VEzwUdvSRuv1k2JaAEaMiL7LLNDTUf9bXSapqccCcSb"
-		recipient   = "nXSYHp74u88zKPiRi7t22nv4WCBHXUBpGrVw3V93f2s"
-		from        = myKeypair.Pub
-		myPrivateKey = myKeypair.Prv
-		nonce       = uint(0)
-		fee         float32 = 0.005
-		amountInKLY float32 = 0.2
+		shardID              = "2VEzwUdvSRuv1k2JaAEaMiL7LLNDTUf9bXSapqccCcSb"
+		recipient            = "nXSYHp74u88zKPiRi7t22nv4WCBHXUBpGrVw3V93f2s"
+		from                 = myKeypair.Pub
+		myPrivateKey         = myKeypair.Prv
+		nonce                = uint(0)
+		fee          float32 = 0.005
+		amountInKLY  float32 = 0.2
 	)
 
 	myOptions := web1337.Options{
-		SymbioteID:      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		ChainID:         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		WorkflowVersion: 1,
 	}
 
 	sdkHandler, _ := web1337.NewWeb1337(myOptions)
 
 	// Create Default Transaction
-	defTx, err := sdkHandler.CreateDefaultTransaction(shardID, from, myPrivateKey, nonce, fee, recipient, amountInKLY, nil)
+	defTx, err := sdkHandler.CreateEd25519Transaction(shardID, from, myPrivateKey, nonce, fee, recipient, amountInKLY, nil)
 	if err != nil {
 		t.Errorf("Failed to create default transaction: %v", err)
 	}
@@ -59,7 +59,7 @@ func TestEd25519ToEd25519Transaction(t *testing.T) {
 	msigRecipient := "7GPupbq1vtKUgaqVeHiDbEJcxS7sSjwPnbht4eRaDBAEJv8ZKHNCSu2Am3CuWnHjta"
 	var rev_t int = 0
 
-	msigTx, err := sdkHandler.CreateDefaultTransaction(shardID, from, myPrivateKey, nonce, fee, msigRecipient, amountInKLY, &rev_t)
+	msigTx, err := sdkHandler.CreateEd25519Transaction(shardID, from, myPrivateKey, nonce, fee, msigRecipient, amountInKLY, &rev_t)
 	if err != nil {
 		t.Errorf("Failed to create multisig transaction: %v", err)
 	}

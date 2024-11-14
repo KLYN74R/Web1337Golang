@@ -3,13 +3,14 @@ package tests
 import (
 	"fmt"
 	"testing"
+
 	web1337 "github.com/KLYN74R/Web1337Golang"
 )
 
 func TestGetBlockByBlockID(t *testing.T) {
-    myOptions := web1337.Options{
-        NodeURL: "http://localhost:7332",
-		SymbioteID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	myOptions := web1337.Options{
+		NodeURL:         "http://localhost:7332",
+		ChainID:         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		WorkflowVersion: 1,
 	}
 
@@ -18,17 +19,17 @@ func TestGetBlockByBlockID(t *testing.T) {
 	blockID := "0:9GQ46rqY238rk2neSwgidap9ww5zbAN4dyqyC7j5ZnBK:15"
 
 	blockData, err := sdkHandler.GetBlockByBlockID(blockID)
-    if err != nil {
-        t.Fatalf("Error fetching block by ID: %v", err)
-    }
+	if err != nil {
+		t.Fatalf("Error fetching block by ID: %v", err)
+	}
 
-    fmt.Println("Result: ", string(blockData))
+	fmt.Println("Result: ", string(blockData))
 }
 
 func TestGetBlockBySID(t *testing.T) {
-    myOptions := web1337.Options{
-        NodeURL: "http://localhost:7332",
-		SymbioteID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	myOptions := web1337.Options{
+		NodeURL:         "http://localhost:7332",
+		ChainID:         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		WorkflowVersion: 1,
 	}
 
@@ -39,39 +40,39 @@ func TestGetBlockBySID(t *testing.T) {
 
 	blockData, err := sdkHandler.GetBlockBySID(shard, indexInShard)
 
-    if err != nil {
-        t.Fatalf("Error fetching block by SID: %v", err)
-    }
+	if err != nil {
+		t.Fatalf("Error fetching block by SID: %v", err)
+	}
 
-    fmt.Println("Result: ", string(blockData))
+	fmt.Println("Result: ", string(blockData))
 }
 
 func TestGetLatestNBlocksOnShard(t *testing.T) {
-    myOptions := web1337.Options{
-        NodeURL: "http://localhost:7332",
-		SymbioteID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	myOptions := web1337.Options{
+		NodeURL:         "http://localhost:7332",
+		ChainID:         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		WorkflowVersion: 1,
 	}
 
 	sdkHandler, _ := web1337.NewWeb1337(myOptions)
 
-    shard := "shard_0"
-    startIndex := uint(100)
-    limit := uint(10)
+	shard := "shard_0"
+	startIndex := uint(100)
+	limit := uint(10)
 
 	blockData, err := sdkHandler.GetLatestNBlocksOnShard(shard, startIndex, limit)
 
-    if err != nil {
-        t.Fatalf("Error fetching latest N blocks on shard: %v", err)
-    }
+	if err != nil {
+		t.Fatalf("Error fetching latest N blocks on shard: %v", err)
+	}
 
-    fmt.Println("Result: ", string(blockData))
+	fmt.Println("Result: ", string(blockData))
 }
 
 func TestGetTotalBlocksAndTxsStats(t *testing.T) {
-    myOptions := web1337.Options{
-        NodeURL: "http://localhost:7332",
-		SymbioteID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	myOptions := web1337.Options{
+		NodeURL:         "http://localhost:7332",
+		ChainID:         "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		WorkflowVersion: 1,
 	}
 
@@ -80,8 +81,8 @@ func TestGetTotalBlocksAndTxsStats(t *testing.T) {
 	blockAndTxInfo, err := sdkHandler.GetTotalBlocksAndTxsStats()
 
 	if err != nil {
-        t.Fatalf("Error fetching total blocks and transactions stats: %v", err)
-    }
+		t.Fatalf("Error fetching total blocks and transactions stats: %v", err)
+	}
 
-    fmt.Println("Result: ", string(blockAndTxInfo))
+	fmt.Println("Result: ", string(blockAndTxInfo))
 }

@@ -3,25 +3,26 @@ package web1337
 import (
 	"fmt"
 
+	bls "github.com/KLYN74R/Web1337Golang/crypto_primitives/bls"
 	ed25519 "github.com/KLYN74R/Web1337Golang/crypto_primitives/ed25519"
 	"github.com/KLYN74R/Web1337Golang/crypto_primitives/pqc"
 	tbls "github.com/KLYN74R/Web1337Golang/crypto_primitives/tbls"
 
 	SIGNATURES_TYPES "github.com/KLYN74R/Web1337Golang/signature_types"
-	TXS_TYPES "github.com/KLYN74R/Web1337Golang/tx_types"
 )
 
 type TransactionTemplate struct {
-	V       uint        `json:"v"`
-	Creator string      `json:"creator"`
-	Type    string      `json:"type"`
-	Nonce   uint        `json:"nonce"`
-	Fee     float32     `json:"fee"`
-	Payload interface{} `json:"payload"` // might be various - depends on transaction type
-	Sig     string      `json:"sig"`
+	V       uint                   `json:"v"`
+	Creator string                 `json:"creator"`
+	Type    string                 `json:"type"`
+	Nonce   uint                   `json:"nonce"`
+	Fee     float32                `json:"fee"`
+	Payload map[string]interface{} `json:"payload"` // might be various - depends on transaction type
+	SigType string                 `json:"sigType"`
+	Sig     string                 `json:"sig"`
 }
 
-func (web1337 *Web1337) GetTransactionTemplate(workflowVersion uint, creator, txType string, nonce uint, fee float32, payload map[string]interface{}) TransactionTemplate {
+func (web1337 *Web1337) GetTransactionTemplate(workflowVersion uint, creator, txType, sigType string, nonce uint, fee float32, payload map[string]interface{}) TransactionTemplate {
 	return TransactionTemplate{
 		V:       workflowVersion,
 		Creator: creator,
@@ -29,113 +30,97 @@ func (web1337 *Web1337) GetTransactionTemplate(workflowVersion uint, creator, tx
 		Nonce:   nonce,
 		Fee:     fee,
 		Payload: payload,
+		SigType: sigType,
 		Sig:     "",
 	}
 }
 
-func (web1337 *Web1337) CreateDefaultTransaction(originShard, yourAddress, yourPrivateKeyAsHex string, nonce uint, fee float32, recipient string, amountInKLY float32, rev_t *int) (TransactionTemplate, error) {
-	coreWorkflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
+func (web1337 *Web1337) CreateEd25519Transaction(originShard, txType, yourAddress, base64PrivateKey string, nonce uint, fee float32, payload map[string]interface{}) (TransactionTemplate, error) {
 
-	payload := map[string]interface{}{
-		"sigType": SIGNATURES_TYPES.DEFAULT_SIG,
-		"to":      recipient,
-		"amount":  amountInKLY,
-	}
+	coreWorkflowVersion := web1337.Chains[web1337.CurrentChain].WorkflowVersion
 
-	// In case we send from Ed25519 to BLS
-	if rev_t != nil {
-		payload["rev_t"] = *rev_t
-	}
+	txTemplate := web1337.GetTransactionTemplate(coreWorkflowVersion, yourAddress, txType, SIGNATURES_TYPES.DEFAULT_SIG, nonce, fee, payload)
 
-	txTemplate := web1337.GetTransactionTemplate(coreWorkflowVersion, yourAddress, TXS_TYPES.TX, nonce, fee, payload)
+	dataToSign := web1337.CurrentChain + string(coreWorkflowVersion) + originShard + txType + mapToJSON(payload) + string(nonce) + fmt.Sprintf("%f", fee)
 
-	dataToSign := web1337.CurrentSymbiote + string(coreWorkflowVersion) + originShard + TXS_TYPES.TX + mapToJSON(payload) + string(nonce) + fmt.Sprintf("%f", fee)
-	txTemplate.Sig = ed25519.GenerateSignature(yourPrivateKeyAsHex, dataToSign)
+	txTemplate.Sig = ed25519.GenerateSignature(base64PrivateKey, dataToSign)
+
+	// Return signed transaction
 
 	return txTemplate, nil
 }
 
-func (web1337 *Web1337) CreateMultisigTransaction(rootPubKey, aggregatedPubOfActive, aggregatedSignatureOfActive string, afkSigners []string, nonce uint, fee float32, recipient string, amountInKLY float32, rev_t *int) TransactionTemplate {
-	coreWorkflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
+func (web1337 *Web1337) SignDataForMultisigTransaction(originShard, txType, blsPrivateKey string, nonce uint, fee float32, payload map[string]interface{}) string {
 
-	payload := map[string]interface{}{
-		"sigType": SIGNATURES_TYPES.MULTISIG_SIG,
-		"active":  aggregatedPubOfActive,
-		"afk":     afkSigners,
-		"to":      recipient,
-		"amount":  amountInKLY,
-	}
+	coreWorkflowVersion := web1337.Chains[web1337.CurrentChain].WorkflowVersion
 
-	if rev_t != nil {
-		payload["rev_t"] = *rev_t
-	}
+	dataToSign := web1337.CurrentChain + string(coreWorkflowVersion) + originShard + txType + mapToJSON(payload) + string(nonce) + fmt.Sprintf("%f", fee)
 
-	multisigTransaction := web1337.GetTransactionTemplate(coreWorkflowVersion, rootPubKey, TXS_TYPES.TX, nonce, fee, payload)
+	blsSingleSigna := bls.GenerateSignature(blsPrivateKey, dataToSign)
+
+	return blsSingleSigna
+
+}
+
+func (web1337 *Web1337) CreateMultisigTransaction(txType, rootPubKey, aggregatedSignatureOfActive string, nonce uint, fee float32, payload map[string]interface{}) TransactionTemplate {
+
+	coreWorkflowVersion := web1337.Chains[web1337.CurrentChain].WorkflowVersion
+
+	multisigTransaction := web1337.GetTransactionTemplate(coreWorkflowVersion, rootPubKey, txType, SIGNATURES_TYPES.MULTISIG_SIG, nonce, fee, payload)
+
 	multisigTransaction.Sig = aggregatedSignatureOfActive
 
 	return multisigTransaction
 }
 
-// BuildPartialSignatureWithTxData builds a partial signature with transaction data
-func (web1337 *Web1337) BuildPartialSignatureWithTxData(hexID string, sharedPayload []string, originShard string, nonce, fee int, recipient string, amountInKLY int, rev_t *int) (string, error) {
-	coreWorkflowVersion := web1337.Symbiotes[web1337.CurrentSymbiote].WorkflowVersion
+func (web1337 *Web1337) BuildPartialSignatureWithTxData(originShard, txType, hexID string, sharedPayload []string, nonce uint, fee float32, payload map[string]interface{}) (string, error) {
 
-	payloadForTblsTransaction := map[string]interface{}{
-		"to":      recipient,
-		"amount":  amountInKLY,
-		"sigType": SIGNATURES_TYPES.TBLS_SIG,
-	}
+	coreWorkflowVersion := web1337.Chains[web1337.CurrentChain].WorkflowVersion
 
-	if rev_t != nil {
-		payloadForTblsTransaction["rev_t"] = *rev_t
-	}
+	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%d", web1337.CurrentChain, coreWorkflowVersion, originShard, txType, mapToJSON(payload), nonce, fee)
 
-	dataToSign := fmt.Sprintf("%s%d%s%s%s%d%d", web1337.CurrentSymbiote, coreWorkflowVersion, originShard, TXS_TYPES.TX, mapToJSON(payloadForTblsTransaction), nonce, fee)
 	partialSignature := tbls.GeneratePartialSignature(hexID, dataToSign, sharedPayload)
 
 	return partialSignature, nil
 }
 
-// CreateThresholdTransaction creates a threshold transaction
-func (sdk *Web1337) CreateThresholdTransaction(tblsRootPubkey string, partialSignatures, idsOfSigners []string, nonce uint, recipient string, amountInKLY, fee float32, rev_t *int) TransactionTemplate {
-	coreWorkflowVersion := sdk.Symbiotes[sdk.CurrentSymbiote].WorkflowVersion
+func (sdk *Web1337) CreateThresholdTransaction(txType, tblsRootPubkey string, partialSignatures, idsOfSigners []string, nonce uint, fee float32, payload map[string]interface{}) TransactionTemplate {
 
-	tblsPayload := map[string]interface{}{
-		"to":      recipient,
-		"amount":  amountInKLY,
-		"sigType": SIGNATURES_TYPES.TBLS_SIG,
-	}
+	coreWorkflowVersion := sdk.Chains[sdk.CurrentChain].WorkflowVersion
 
-	if rev_t != nil {
-		tblsPayload["rev_t"] = *rev_t
-	}
+	thresholdSigTransaction := sdk.GetTransactionTemplate(coreWorkflowVersion, tblsRootPubkey, txType, SIGNATURES_TYPES.TBLS_SIG, nonce, fee, payload)
 
-	thresholdSigTransaction := sdk.GetTransactionTemplate(coreWorkflowVersion, tblsRootPubkey, TXS_TYPES.TX, nonce, fee, tblsPayload)
 	thresholdSigTransaction.Sig = tbls.BuildRootSignature(partialSignatures, idsOfSigners)
 
 	return thresholdSigTransaction
 }
 
-// CreatePostQuantumTransaction creates a post-quantum transaction
-func (sdk *Web1337) CreatePostQuantumTransaction(originShard, sigType, yourAddress, yourPrivateKeyAsHex string, nonce uint, recipient string, amountInKLY, fee float32, rev_t *int) (TransactionTemplate, error) {
-	coreWorkflowVersion := sdk.Symbiotes[sdk.CurrentSymbiote].WorkflowVersion
+func (sdk *Web1337) CreatePostQuantumTransaction(originShard, txType, pqcAlgorithm, yourAddress, yourPrivateKeyAsHex string, nonce uint, fee float32, payload map[string]interface{}) (TransactionTemplate, error) {
 
-	payload := map[string]interface{}{
-		"sigType": sigType,
-		"to":      recipient,
-		"amount":  amountInKLY,
-	}
+	coreWorkflowVersion := sdk.Chains[sdk.CurrentChain].WorkflowVersion
 
-	if rev_t != nil {
-		payload["rev_t"] = *rev_t
-	}
+	var algoToAddToTx string
 
-	transaction := sdk.GetTransactionTemplate(coreWorkflowVersion, yourAddress, TXS_TYPES.TX, nonce, fee, payload)
+	if pqcAlgorithm == "bliss" {
 
-	if sigType == SIGNATURES_TYPES.POST_QUANTUM_BLISS {
-		transaction.Sig = pqc.GenerateBlissSignature(yourPrivateKeyAsHex, fmt.Sprintf("%s%d%s%s%s%d%f", sdk.CurrentSymbiote, coreWorkflowVersion, originShard, TXS_TYPES.TX, payload, nonce, fee))
+		algoToAddToTx = SIGNATURES_TYPES.POST_QUANTUM_BLISS
+
 	} else {
-		transaction.Sig = pqc.GenerateDilithiumSignature(yourPrivateKeyAsHex, fmt.Sprintf("%s%d%s%s%s%d%f", sdk.CurrentSymbiote, coreWorkflowVersion, originShard, TXS_TYPES.TX, payload, nonce, fee))
+
+		algoToAddToTx = SIGNATURES_TYPES.POST_QUANTUM_DILITHIUM
+
+	}
+
+	transaction := sdk.GetTransactionTemplate(coreWorkflowVersion, yourAddress, txType, algoToAddToTx, nonce, fee, payload)
+
+	if pqcAlgorithm == "bliss" {
+
+		transaction.Sig = pqc.GenerateBlissSignature(yourPrivateKeyAsHex, fmt.Sprintf("%s%d%s%s%s%d%f", sdk.CurrentChain, coreWorkflowVersion, originShard, txType, payload, nonce, fee))
+
+	} else {
+
+		transaction.Sig = pqc.GenerateDilithiumSignature(yourPrivateKeyAsHex, fmt.Sprintf("%s%d%s%s%s%d%f", sdk.CurrentChain, coreWorkflowVersion, originShard, txType, payload, nonce, fee))
+
 	}
 
 	return transaction, nil
